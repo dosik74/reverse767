@@ -89,7 +89,7 @@ const Layout = () => {
             <div className="flex items-center gap-8">
               <Link to="/" className="flex items-center gap-2">
                 <Film className="w-6 h-6 text-primary" />
-                <span className="text-xl font-bold gradient-text">CineTrack</span>
+                <span className="text-xl font-bold gradient-text">Reverse</span>
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
