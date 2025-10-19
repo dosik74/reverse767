@@ -334,7 +334,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      award_xp: {
+        Args: { user_id: string; xp_amount: number }
+        Returns: undefined
+      }
+      calculate_level: {
+        Args: { xp_amount: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

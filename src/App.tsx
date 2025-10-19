@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Layout from "./components/Layout";
 import Movies from "./pages/Movies";
 import MovieDetail from "./pages/MovieDetail";
+import Profile from "./pages/Profile";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Movies />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
+            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/series" element={<PlaceholderPage title="Series & Anime" icon={Tv} />} />
             <Route path="/games" element={<PlaceholderPage title="Games" icon={Gamepad} />} />
             <Route path="/music" element={<PlaceholderPage title="Music" icon={Music} />} />
