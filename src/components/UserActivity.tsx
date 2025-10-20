@@ -1,31 +1,40 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, MessageCircle, Film } from "lucide-react";
-import { format } from "date-fns";
+import { Star, MessageSquare, Heart } from "lucide-react";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 interface Activity {
   id: string;
   type: 'rating' | 'comment' | 'favorite';
-  movie_title: string;
+  movie_id: number;
+  created_at: string;
   rating?: number;
   content?: string;
-  created_at: string;
+  title?: string;
+  poster_path?: string;
 }
 
 interface UserActivityProps {
   userId: string;
+  showOnlyWatched?: boolean;
 }
 
-const UserActivity = ({ userId }: UserActivityProps) => {
+const UserActivity = ({ userId, showOnlyWatched = false }: UserActivityProps) => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [moviesData, setMoviesData] = useState<any[]>([]);
 
   useEffect(() => {
     loadMoviesData();
-    fetchActivities();
-  }, [userId]);
+  }, []);
+
+  useEffect(() => {
+    if (moviesData.length > 0) {
+      fetchActivities();
+    }
+  }, [userId, showOnlyWatched, moviesData]);
 
   const loadMoviesData = async () => {
     const response = await fetch('/data/movies.json');
@@ -35,54 +44,69 @@ const UserActivity = ({ userId }: UserActivityProps) => {
 
   const fetchActivities = async () => {
     try {
-      const [ratings, comments, favorites] = await Promise.all([
-        supabase
+      if (showOnlyWatched) {
+        const { data: watchedMovies } = await supabase
           .from('user_movies')
-          .select('movie_id, rating, created_at')
+          .select('*')
           .eq('user_id', userId)
-          .not('rating', 'is', null)
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('comments')
-          .select('movie_id, content, created_at')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-        supabase
-          .from('favorite_movies')
-          .select('movie_id, created_at')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-          .limit(10),
-      ]);
+          .eq('status', 'completed')
+          .order('updated_at', { ascending: false });
 
-      const allActivities: Activity[] = [
-        ...(ratings.data || []).map(r => ({
-          id: `rating-${r.movie_id}`,
-          type: 'rating' as const,
-          movie_title: moviesData.find(m => m.id === r.movie_id)?.title || 'Unknown',
-          rating: r.rating,
-          created_at: r.created_at,
-        })),
-        ...(comments.data || []).map(c => ({
-          id: `comment-${c.movie_id}-${c.created_at}`,
-          type: 'comment' as const,
-          movie_title: moviesData.find(m => m.id === c.movie_id)?.title || 'Unknown',
-          content: c.content,
-          created_at: c.created_at,
-        })),
-        ...(favorites.data || []).map(f => ({
-          id: `favorite-${f.movie_id}`,
-          type: 'favorite' as const,
-          movie_title: moviesData.find(m => m.id === f.movie_id)?.title || 'Unknown',
-          created_at: f.created_at,
-        })),
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const enriched = (watchedMovies || []).map(m => {
+          const movieData = moviesData.find(movie => movie.id === m.movie_id);
+          return {
+            id: m.id,
+            type: 'rating' as const,
+            movie_id: m.movie_id,
+            created_at: m.updated_at,
+            rating: m.rating,
+            title: movieData?.title,
+            poster_path: movieData?.poster_path,
+          };
+        });
 
-      setActivities(allActivities.slice(0, 20));
+        setActivities(enriched);
+      } else {
+        const [ratings, comments, favorites] = await Promise.all([
+          supabase.from('user_movies').select('*').eq('user_id', userId).not('rating', 'is', null),
+          supabase.from('comments').select('*').eq('user_id', userId),
+          supabase.from('favorite_movies').select('*').eq('user_id', userId),
+        ]);
+
+        const combined: Activity[] = [
+          ...(ratings.data || []).map(r => ({ 
+            id: r.id, 
+            type: 'rating' as const, 
+            movie_id: r.movie_id, 
+            created_at: r.created_at, 
+            rating: r.rating,
+            title: moviesData.find(m => m.id === r.movie_id)?.title,
+            poster_path: moviesData.find(m => m.id === r.movie_id)?.poster_path,
+          })),
+          ...(comments.data || []).map(c => ({ 
+            id: c.id, 
+            type: 'comment' as const, 
+            movie_id: c.movie_id, 
+            created_at: c.created_at, 
+            content: c.content,
+            title: moviesData.find(m => m.id === c.movie_id)?.title,
+            poster_path: moviesData.find(m => m.id === c.movie_id)?.poster_path,
+          })),
+          ...(favorites.data || []).map(f => ({ 
+            id: f.id, 
+            type: 'favorite' as const, 
+            movie_id: f.movie_id, 
+            created_at: f.created_at,
+            title: moviesData.find(m => m.id === f.movie_id)?.title,
+            poster_path: moviesData.find(m => m.id === f.movie_id)?.poster_path,
+          })),
+        ];
+
+        combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setActivities(combined);
+      }
     } catch (error) {
-      console.error('Failed to load activities');
+      toast.error('Failed to load activity');
     } finally {
       setLoading(false);
     }
@@ -100,54 +124,73 @@ const UserActivity = ({ userId }: UserActivityProps) => {
     return (
       <Card>
         <CardContent className="pt-6 text-center">
-          <Film className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">No activity yet</p>
+          <p className="text-muted-foreground">
+            {showOnlyWatched ? 'No watched movies yet' : 'No activity yet'}
+          </p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {activities.map((activity) => (
-        <Card key={activity.id} className="hover:border-primary transition-colors">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <div className="p-2 rounded-full bg-primary/20">
-                {activity.type === 'rating' && <Star className="w-5 h-5 text-primary" />}
-                {activity.type === 'comment' && <MessageCircle className="w-5 h-5 text-primary" />}
-                {activity.type === 'favorite' && <Star className="w-5 h-5 text-accent" />}
-              </div>
-
-              <div className="flex-1">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {activity.type === 'rating' && `Rated ${activity.movie_title}`}
-                      {activity.type === 'comment' && `Commented on ${activity.movie_title}`}
-                      {activity.type === 'favorite' && `Added ${activity.movie_title} to favorites`}
-                    </p>
-                    {activity.rating && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="w-4 h-4 fill-primary text-primary" />
-                        <span className="font-bold">{activity.rating.toFixed(1)}</span>
-                      </div>
-                    )}
-                    {activity.content && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                        {activity.content}
-                      </p>
-                    )}
-                  </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {format(new Date(activity.created_at), 'MMM d, yyyy')}
-                  </span>
+    <div className={showOnlyWatched ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" : "space-y-4"}>
+      {showOnlyWatched ? (
+        activities.map((activity) => (
+          <Link key={activity.id} to={`/movie/${activity.movie_id}`}>
+            <Card className="overflow-hidden hover-lift cursor-pointer group animate-scale-in">
+              <div className="aspect-[2/3] relative overflow-hidden">
+                {activity.poster_path && (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w300${activity.poster_path}`}
+                    alt={activity.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/300x450/1a1a2e/ffffff?text=No+Image';
+                    }}
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                  {activity.rating && (
+                    <div className="flex items-center gap-1 text-yellow-400 mb-1">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="text-sm font-semibold">{activity.rating}/10</span>
+                    </div>
+                  )}
+                  <h3 className="text-sm font-semibold text-white line-clamp-2">{activity.title}</h3>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </Card>
+          </Link>
+        ))
+      ) : (
+        activities.map((activity) => (
+          <Card key={activity.id} className="hover-lift animate-scale-in">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                {activity.type === 'rating' && <Star className="w-5 h-5 text-yellow-400 mt-1" />}
+                {activity.type === 'comment' && <MessageSquare className="w-5 h-5 text-blue-400 mt-1" />}
+                {activity.type === 'favorite' && <Heart className="w-5 h-5 text-red-400 mt-1" />}
+                
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">
+                    {new Date(activity.created_at).toLocaleDateString()}
+                  </p>
+                  {activity.type === 'rating' && (
+                    <p>Rated {activity.title || `movie #${activity.movie_id}`}: {activity.rating}/10</p>
+                  )}
+                  {activity.type === 'comment' && (
+                    <p className="line-clamp-2">{activity.content}</p>
+                  )}
+                  {activity.type === 'favorite' && (
+                    <p>Added {activity.title || `movie #${activity.movie_id}`} to favorites</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))
+      )}
     </div>
   );
 };

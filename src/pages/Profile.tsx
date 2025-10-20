@@ -257,13 +257,16 @@ const Profile = () => {
         </Card>
 
         <Tabs defaultValue="favorites" className="mt-8">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="favorites">
               <Star className="w-4 h-4 mr-2" />
               Top 50
             </TabsTrigger>
-            <TabsTrigger value="activity">
+            <TabsTrigger value="watched">
               <Film className="w-4 h-4 mr-2" />
+              Watched
+            </TabsTrigger>
+            <TabsTrigger value="activity">
               Activity
             </TabsTrigger>
             <TabsTrigger value="stats">
@@ -271,15 +274,19 @@ const Profile = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="favorites" className="mt-6">
+          <TabsContent value="favorites" className="mt-6 animate-fade-in">
             <FavoriteMovies userId={userId!} isOwnProfile={isOwnProfile} />
           </TabsContent>
 
-          <TabsContent value="activity" className="mt-6">
-            <UserActivity userId={userId!} />
+          <TabsContent value="watched" className="mt-6 animate-fade-in">
+            <UserActivity userId={userId!} showOnlyWatched={true} />
           </TabsContent>
 
-          <TabsContent value="stats" className="mt-6">
+          <TabsContent value="activity" className="mt-6 animate-fade-in">
+            <UserActivity userId={userId!} showOnlyWatched={false} />
+          </TabsContent>
+
+          <TabsContent value="stats" className="mt-6 animate-fade-in">
             <Card>
               <CardContent className="pt-6">
                 <p className="text-muted-foreground">Stats coming soon...</p>
