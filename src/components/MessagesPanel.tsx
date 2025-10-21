@@ -7,10 +7,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { MessageSquare } from "lucide-react";
+import ChatWindow from "./ChatWindow";
 
 interface Message {
   id: string;
@@ -35,6 +38,7 @@ const MessagesPanel = ({
 }) => {
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedChat, setSelectedChat] = useState<{ friendId: string; friendUsername: string; friendAvatar: string | null } | null>(null);
 
   useEffect(() => {
     if (open && userId) {
@@ -141,6 +145,13 @@ const MessagesPanel = ({
                   <div
                     key={conv.sender.id}
                     className="p-3 rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                    onClick={() =>
+                      setSelectedChat({
+                        friendId: conv.sender.id,
+                        friendUsername: conv.sender.username,
+                        friendAvatar: conv.sender.avatar_url,
+                      })
+                    }
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-12 h-12">
@@ -175,6 +186,16 @@ const MessagesPanel = ({
           )}
         </ScrollArea>
       </SheetContent>
+      {selectedChat && (
+        <ChatWindow
+          open={!!selectedChat}
+          onClose={() => setSelectedChat(null)}
+          friendId={selectedChat.friendId}
+          friendUsername={selectedChat.friendUsername}
+          friendAvatar={selectedChat.friendAvatar}
+          currentUserId={userId}
+        />
+      )}
     </Sheet>
   );
 };

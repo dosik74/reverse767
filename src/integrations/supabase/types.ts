@@ -288,6 +288,77 @@ export type Database = {
         }
         Relationships: []
       }
+      top_list_items: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          metadata: Json | null
+          poster_url: string | null
+          rank: number
+          title: string | null
+          top_list_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          metadata?: Json | null
+          poster_url?: string | null
+          rank: number
+          title?: string | null
+          top_list_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          metadata?: Json | null
+          poster_url?: string | null
+          rank?: number
+          title?: string | null
+          top_list_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "top_list_items_top_list_id_fkey"
+            columns: ["top_list_id"]
+            isOneToOne: false
+            referencedRelation: "top_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      top_lists: {
+        Row: {
+          created_at: string
+          id: string
+          media_type: Database["public"]["Enums"]["media_type"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_type: Database["public"]["Enums"]["media_type"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_type?: Database["public"]["Enums"]["media_type"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_movies: {
         Row: {
           created_at: string
@@ -344,7 +415,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      media_type: "movie" | "anime" | "book" | "music" | "game"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -471,6 +542,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      media_type: ["movie", "anime", "book", "music", "game"],
+    },
   },
 } as const

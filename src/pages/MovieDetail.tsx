@@ -244,17 +244,8 @@ const MovieDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={`https://www.youtube.com/embed/${movie.id}`}
-                    title="Movie Trailer"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
+                <div className="aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                  <p className="text-muted-foreground">Trailer coming soon</p>
                 </div>
               </CardContent>
             </Card>

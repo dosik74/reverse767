@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import FriendRequestActions from "./FriendRequestActions";
 
 interface Notification {
   id: string;
@@ -20,6 +21,7 @@ interface Notification {
   read: boolean;
   created_at: string;
   related_user_id: string | null;
+  related_item_id: string | null;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -160,7 +162,7 @@ const NotificationsPanel = ({
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                  className={`p-3 rounded-lg transition-colors ${
                     notification.read ? 'bg-card' : 'bg-accent/50'
                   } hover:bg-accent`}
                   onClick={() => !notification.read && markAsRead(notification.id)}
@@ -174,13 +176,26 @@ const NotificationsPanel = ({
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">{notification.content}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), {
-                          addSuffix: true,
-                        })}
-                      </p>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div>
+                        <p className="text-sm">
+                          {notification.profiles && (
+                            <span className="font-semibold">@{notification.profiles.username} </span>
+                          )}
+                          {notification.content}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), {
+                            addSuffix: true,
+                          })}
+                        </p>
+                      </div>
+                      {notification.type === 'friend_request' && notification.related_item_id && (
+                        <FriendRequestActions
+                          friendshipId={notification.related_item_id}
+                          onAction={fetchNotifications}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

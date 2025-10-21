@@ -6,10 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { UserPlus, UserCheck, Users, Star, Film } from "lucide-react";
+import { UserPlus, UserCheck, Users, Star, Film, MessageSquare, List } from "lucide-react";
 import ProfileEditor from "@/components/ProfileEditor";
 import FavoriteMovies from "@/components/FavoriteMovies";
 import UserActivity from "@/components/UserActivity";
+import ChatWindow from "@/components/ChatWindow";
+import TopListsManager from "@/components/TopListsManager";
+import ProfileCustomizations from "@/components/ProfileCustomizations";
 
 interface Profile {
   id: string;
@@ -31,6 +34,7 @@ const Profile = () => {
   const [stats, setStats] = useState({ movies: 0, followers: 0, following: 0 });
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     getCurrentUser();
@@ -220,10 +224,16 @@ const Profile = () => {
                           </Button>
                         )}
                         {friendshipStatus === 'accepted' && (
-                          <Button variant="outline" disabled>
-                            <Users className="w-4 h-4 mr-2" />
-                            Friends
-                          </Button>
+                          <>
+                            <Button variant="outline" disabled>
+                              <Users className="w-4 h-4 mr-2" />
+                              Friends
+                            </Button>
+                            <Button onClick={() => setShowChat(true)} variant="outline">
+                              <MessageSquare className="w-4 h-4 mr-2" />
+                              Message
+                            </Button>
+                          </>
                         )}
                       </>
                     )}
@@ -257,10 +267,14 @@ const Profile = () => {
         </Card>
 
         <Tabs defaultValue="favorites" className="mt-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="favorites">
               <Star className="w-4 h-4 mr-2" />
               Top 50
+            </TabsTrigger>
+            <TabsTrigger value="lists">
+              <List className="w-4 h-4 mr-2" />
+              Lists
             </TabsTrigger>
             <TabsTrigger value="watched">
               <Film className="w-4 h-4 mr-2" />
@@ -268,6 +282,9 @@ const Profile = () => {
             </TabsTrigger>
             <TabsTrigger value="activity">
               Activity
+            </TabsTrigger>
+            <TabsTrigger value="customizations">
+              Customizations
             </TabsTrigger>
             <TabsTrigger value="stats">
               Stats
@@ -278,12 +295,20 @@ const Profile = () => {
             <FavoriteMovies userId={userId!} isOwnProfile={isOwnProfile} />
           </TabsContent>
 
+          <TabsContent value="lists" className="mt-6 animate-fade-in">
+            <TopListsManager userId={userId!} isOwnProfile={isOwnProfile} />
+          </TabsContent>
+
           <TabsContent value="watched" className="mt-6 animate-fade-in">
             <UserActivity userId={userId!} showOnlyWatched={true} />
           </TabsContent>
 
           <TabsContent value="activity" className="mt-6 animate-fade-in">
             <UserActivity userId={userId!} showOnlyWatched={false} />
+          </TabsContent>
+
+          <TabsContent value="customizations" className="mt-6 animate-fade-in">
+            <ProfileCustomizations level={profile.level} />
           </TabsContent>
 
           <TabsContent value="stats" className="mt-6 animate-fade-in">
@@ -302,6 +327,17 @@ const Profile = () => {
           open={showEditor}
           onClose={() => setShowEditor(false)}
           onUpdate={fetchProfile}
+        />
+      )}
+
+      {showChat && !isOwnProfile && profile && (
+        <ChatWindow
+          open={showChat}
+          onClose={() => setShowChat(false)}
+          friendId={userId!}
+          friendUsername={profile.username}
+          friendAvatar={profile.avatar_url}
+          currentUserId={currentUserId!}
         />
       )}
     </div>
