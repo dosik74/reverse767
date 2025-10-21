@@ -15,9 +15,12 @@ import {
 import { Film, Bell, MessageSquare, User, LogOut, Home, Gamepad, Music, Book, Tv } from "lucide-react";
 import NotificationsPanel from "./NotificationsPanel";
 import MessagesPanel from "./MessagesPanel";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Layout = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -96,37 +99,41 @@ const Layout = () => {
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/" className="flex items-center gap-2">
                     <Home className="w-4 h-4" />
-                    Movies
+                    {t('nav.movies')}
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/series" className="flex items-center gap-2">
                     <Tv className="w-4 h-4" />
-                    Series
+                    {t('nav.series')}
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/games" className="flex items-center gap-2">
                     <Gamepad className="w-4 h-4" />
-                    Games
+                    {t('nav.games')}
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/music" className="flex items-center gap-2">
                     <Music className="w-4 h-4" />
-                    Music
+                    {t('nav.music')}
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/books" className="flex items-center gap-2">
                     <Book className="w-4 h-4" />
-                    Books
+                    {t('nav.books')}
                   </Link>
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
+              <div className="hidden md:block">
+                <LanguageSwitcher />
+              </div>
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -165,13 +172,13 @@ const Layout = () => {
                   <DropdownMenuItem asChild>
                     <Link to={`/profile/${profile?.id}`} className="flex items-center gap-2">
                       <User className="w-4 h-4" />
-                      Profile
+                      {t('nav.profile')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2">
                     <LogOut className="w-4 h-4" />
-                    Sign Out
+                    {t('nav.signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

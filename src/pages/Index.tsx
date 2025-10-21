@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import MovieCard from "@/components/MovieCard";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface Movie {
   id: number;
@@ -27,6 +28,7 @@ const GENRE_CATEGORIES = [
 ];
 
 const Index = () => {
+  const { t } = useTranslation();
   const [allMovies, setAllMovies] = useState<Movie[]>([]);
   const [displayMovies, setDisplayMovies] = useState<Movie[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,15 +99,15 @@ const Index = () => {
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1920')] bg-cover bg-center opacity-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         <div className="container mx-auto px-4 h-full flex flex-col justify-center items-center relative z-10 animate-fade-up">
-          <h1 className="text-6xl font-display font-bold mb-6 gradient-text text-center">Reverse</h1>
+          <h1 className="text-6xl font-display font-bold mb-6 gradient-text text-center">{t('index.heroTitle')}</h1>
           <p className="text-xl text-muted-foreground mb-8 text-center max-w-2xl">
-            Your personal movie tracking and recommendation platform
+            {t('index.heroSubtitle')}
           </p>
           <div className="relative max-w-2xl w-full">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               type="text"
-              placeholder="Search movies, series, games..."
+              placeholder={t('index.searchPlaceholder') || 'Search...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 h-14 text-lg bg-card/80 backdrop-blur-sm"
@@ -156,7 +158,7 @@ const Index = () => {
                 {hasMore && (
                   <div className="flex justify-center mt-12">
                     <Button onClick={loadMore} size="lg" className="gap-2">
-                      Load More Movies
+                      {t('movies.loadMore')}
                     </Button>
                   </div>
                 )}
@@ -165,7 +167,7 @@ const Index = () => {
 
             {!loading && displayMovies.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">No movies found</p>
+                <p className="text-muted-foreground">{t('movies.noResults')}</p>
               </div>
             )}
           </>
