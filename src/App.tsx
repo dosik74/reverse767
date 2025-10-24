@@ -11,6 +11,7 @@ import MovieDetail from "./pages/MovieDetail";
 import Profile from "./pages/Profile";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +24,8 @@ const App = () => (
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<Movies />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/movies" element={<Movies />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/series" element={<PlaceholderPage title="Series & Anime" icon={Tv} />} />

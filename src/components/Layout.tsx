@@ -95,10 +95,16 @@ const Layout = () => {
                 <span className="text-xl font-bold gradient-text">Reverse</span>
               </Link>
 
-              <div className="hidden md:flex items-center gap-1">
+              <div className="flex items-center gap-1">
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/" className="flex items-center gap-2">
                     <Home className="w-4 h-4" />
+                    {t('nav.home')}
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/movies" className="flex items-center gap-2">
+                    <Film className="w-4 h-4" />
                     {t('nav.movies')}
                   </Link>
                 </Button>
@@ -130,7 +136,7 @@ const Layout = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="hidden md:block">
+              <div>
                 <LanguageSwitcher />
               </div>
 

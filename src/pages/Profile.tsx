@@ -13,6 +13,7 @@ import UserActivity from "@/components/UserActivity";
 import ChatWindow from "@/components/ChatWindow";
 import TopListsManager from "@/components/TopListsManager";
 import ProfileCustomizations from "@/components/ProfileCustomizations";
+import FriendsList from "@/components/FriendsList";
 
 interface Profile {
   id: string;
@@ -50,6 +51,31 @@ const Profile = () => {
       }
     }
   }, [userId, currentUserId]);
+
+  useEffect(() => {
+    if (!currentUserId || !userId) return;
+    const channel = supabase
+      .channel('friendship_status')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'friendships' },
+        (payload) => {
+          const row: any = (payload as any).new || (payload as any).old;
+          if (!row) return;
+          const involvesPair =
+            (row.user_id === currentUserId && row.friend_id === userId) ||
+            (row.user_id === userId && row.friend_id === currentUserId);
+          if (involvesPair) {
+            checkFriendshipStatus();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId, userId]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -99,11 +125,11 @@ const Profile = () => {
   };
 
   const checkFriendshipStatus = async () => {
+    if (!currentUserId || !userId) return;
     const { data } = await supabase
       .from('friendships')
       .select('status')
-      .or(`user_id.eq.${currentUserId},friend_id.eq.${currentUserId}`)
-      .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
+      .or(`and(user_id.eq.${currentUserId},friend_id.eq.${userId}),and(user_id.eq.${userId},friend_id.eq.${currentUserId})`)
       .maybeSingle();
 
     setFriendshipStatus(data?.status || null);
@@ -267,7 +293,7 @@ const Profile = () => {
         </Card>
 
         <Tabs defaultValue="favorites" className="mt-8">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="favorites">
               <Star className="w-4 h-4 mr-2" />
               Top 50
@@ -275,6 +301,10 @@ const Profile = () => {
             <TabsTrigger value="lists">
               <List className="w-4 h-4 mr-2" />
               Lists
+            </TabsTrigger>
+            <TabsTrigger value="friends">
+              <Users className="w-4 h-4 mr-2" />
+              Friends
             </TabsTrigger>
             <TabsTrigger value="watched">
               <Film className="w-4 h-4 mr-2" />
