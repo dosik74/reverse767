@@ -2,15 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
+import { useState } from "react";
 interface FriendRequestActionsProps {
   friendshipId: string;
-  onAction: () => void;
+  onAction?: (payload?: { friendshipId: string; status: 'accepted' | 'rejected' }) => void;
 }
 
 const FriendRequestActions = ({ friendshipId, onAction }: FriendRequestActionsProps) => {
+  const [loading, setLoading] = useState(false);
   const handleAccept = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('friendships')
         .update({ status: 'accepted' })
@@ -18,14 +20,17 @@ const FriendRequestActions = ({ friendshipId, onAction }: FriendRequestActionsPr
 
       if (error) throw error;
       toast.success('Friend request accepted!');
-      onAction();
+      onAction?.({ friendshipId, status: 'accepted' });
     } catch (error: any) {
       toast.error('Failed to accept request');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReject = async () => {
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('friendships')
         .delete()
@@ -33,9 +38,11 @@ const FriendRequestActions = ({ friendshipId, onAction }: FriendRequestActionsPr
 
       if (error) throw error;
       toast.success('Friend request rejected');
-      onAction();
+      onAction?.({ friendshipId, status: 'rejected' });
     } catch (error: any) {
       toast.error('Failed to reject request');
+    } finally {
+      setLoading(false);
     }
   };
 

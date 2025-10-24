@@ -39,11 +39,13 @@ const NotificationsPanel = ({
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (open && userId) {
       fetchNotifications();
-      subscribeToNotifications();
+      const cleanup = subscribeToNotifications();
+      return cleanup;
     }
   }, [open, userId]);
 
