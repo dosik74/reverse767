@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Film, Bell, MessageSquare, User, LogOut, Home, Gamepad, Music, Book, Tv } from "lucide-react";
+import { Film, Bell, MessageSquare, User, LogOut, Home, Gamepad, Music, Book, Tv, Shield } from "lucide-react";
 import NotificationsPanel from "./NotificationsPanel";
 import MessagesPanel from "./MessagesPanel";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -23,6 +23,7 @@ const Layout = () => {
   const { t } = useTranslation();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,16 @@ const Layout = () => {
       .eq('id', userId)
       .single();
     setProfile(data);
+
+    // Check if user has admin role
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .single();
+    
+    setIsAdmin(!!roleData);
   };
 
   const handleSignOut = async () => {
@@ -132,6 +143,14 @@ const Layout = () => {
                     {t('nav.books')}
                   </Link>
                 </Button>
+                {isAdmin && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Shield className="w-4 h-4" />
+                      Админ
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
 
