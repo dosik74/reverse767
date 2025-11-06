@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -24,10 +25,11 @@ const App = () => (
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<Index />} />
+          <Route path="/" element={<Index />} />
             <Route path="/movies" element={<Movies />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
             <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/series" element={<PlaceholderPage title="Series & Anime" icon={Tv} />} />
             <Route path="/games" element={<PlaceholderPage title="Games" icon={Gamepad} />} />
             <Route path="/music" element={<PlaceholderPage title="Music" icon={Music} />} />
